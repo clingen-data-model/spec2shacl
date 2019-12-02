@@ -22,6 +22,7 @@ libraryDependencies ++= {
     "com.github.tototoshi"        %% "scala-csv"              % "1.3.6",
 
     // For generating UML diagrams.
+    "es.weso"                     % "shaclex_2.13"            % "0.1.44",
     "es.weso"                     % "umlshaclex_2.13"         % "0.0.47"
   )
 }

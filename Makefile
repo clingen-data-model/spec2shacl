@@ -14,6 +14,7 @@ test: examples/examples.ttl shapes/shapes.ttl
 
 # Generate UML diagrams for the SHACL shapes.
 uml: shapes/shapes.ttl
+	sbt -warn 'runMain es.weso.shaclex.Main --schema shapes/shapes.ttl --engine SHACLEx --outSchemaFormat ShExC --showSchema' > shapes/shapes.shex
 	sbt -warn 'runMain es.weso.uml.cmdline.Main --schema shapes/shapes.ttl --engine SHACLEx -f uml -o uml/uml.xml'
 	# Note that this will need the `dot` command; for macOS, use `brew install graphviz` to install it.
 	sbt -warn 'runMain es.weso.uml.cmdline.Main --schema shapes/shapes.ttl --engine SHACLEx -f svg -o uml/uml.svg'
