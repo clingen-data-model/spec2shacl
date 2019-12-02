@@ -1,4 +1,4 @@
-.PHONY: all clean test
+.PHONY: all clean test uml
 all: test
 
 # Clean up all generated files.
@@ -10,7 +10,13 @@ clean:
 
 # Test whether all examples validate against the generated SHACL.
 test: examples/examples.ttl shapes/shapes.ttl
-	sbt 'runMain org.topbraid.shacl.tools.Validate -datafile examples/examples.ttl -shapesfile shapes/shapes.ttl'
+	sbt -warn 'runMain org.topbraid.shacl.tools.Validate -datafile examples/examples.ttl -shapesfile shapes/shapes.ttl'
+
+# Generate UML diagrams for the SHACL shapes.
+uml: shapes/shapes.ttl
+	sbt -warn 'runMain es.weso.uml.cmdline.Main --schema shapes/shapes.ttl --engine SHACLEx -f uml -o uml/uml.xml'
+	# Note that this will need the `dot` command; for macOS, use `brew install graphviz` to install it.
+	sbt -warn 'runMain es.weso.uml.cmdline.Main --schema shapes/shapes.ttl --engine SHACLEx -f svg -o uml/uml.svg'
 
 # Build the SHACL shapes from the specification downloaded from Google Docs.
 shapes/shapes.ttl: src/main/scala/org/renci/spec2shacl/SpecToSHACL.scala
