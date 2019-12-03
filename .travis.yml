@@ -9,5 +9,7 @@ cache:
     - $HOME/.m2
     - $HOME/.sbt
 
-# We need to run `make test` to test this.
-script: make test
+# We need to run `make test-only` to test this.
+# Note that `make test` will attempt to regenerate examples.ttl, which we
+# don't need to do on Travis CI for now!
+script: make test-only

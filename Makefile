@@ -9,7 +9,9 @@ clean:
 		 examples/examples.ttl
 
 # Test whether all examples validate against the generated SHACL.
-test: examples/examples.ttl shapes/shapes.ttl
+test: examples/examples.ttl shapes/shapes.ttl test-only
+
+test-only:
 	sbt 'runMain org.renci.spec2shacl.Validate shapes/shapes.ttl examples/examples.ttl'
 	# sbt 'runMain org.topbraid.shacl.tools.Validate -datafile examples/examples.ttl -shapesfile shapes/shapes.ttl'
 
