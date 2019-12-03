@@ -117,8 +117,11 @@ object Validate extends App with LazyLogging {
   engine.validateAll()
   val report = engine.getValidationReport
 
-  if (report.conforms)
+  if (report.conforms) {
     println("OK")
-  else
+    System.exit(0)
+  } else {
     ValidationErrorPrinter.print(report, shapesModel, dataModel)
+    System.exit(1)
+  }
 }
