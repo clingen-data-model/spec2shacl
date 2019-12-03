@@ -1,0 +1,13 @@
+# Scala setup.
+language: scala
+scala:
+  - "2.12.10"
+
+# Cache Maven and SBT packages so we don't need to keep downloading them.
+cache:
+  directories:
+    - $HOME/.m2
+    - $HOME/.sbt
+
+# We need to run `make test` to test this.
+script: make test
