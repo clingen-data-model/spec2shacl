@@ -43,21 +43,21 @@ object ValidationErrorPrinter {
       else statement.getObject
     })
     resultsByClass.toSeq.sortBy(_._2.size).foreach({ case (classNode, classResults) =>
-      println(s"Class has ${classResults.size} errors: $classNode")
+      println(s"For output results with the class $classNode (${classResults.size} errors)")
 
       // 2. Group results by target node.
       val resultsByFocusNode = classResults.groupBy(_.getFocusNode)
       resultsByFocusNode.toSeq.sortBy(_._2.size).foreach({ case (focusNode, focusNodeResults) =>
-        println(s" - Focus node has ${focusNodeResults.size} errors: $focusNode")
+        println(s" - In focus node $focusNode (${focusNodeResults.size} errors)")
 
         val resultsByPath = focusNodeResults.groupBy(_.getPath)
         resultsByPath.toSeq.sortBy(_._2.size).foreach({ case (pathNode, pathNodeResults) =>
-          println(s"   - ${summarizeResource(pathNode)}")
+          println(s"   - In property ${summarizeResource(pathNode)}")
           pathNodeResults.foreach(result => {
             if (result.getValue == null)
               println(s"     - ${result.getMessage}")
             else
-              println(s"     - ${result.getValue}: ${result.getMessage}")
+              println(s"     - (for value ${result.getValue}) ${result.getMessage}")
           })
         })
       })
