@@ -21,6 +21,7 @@ import org.topbraid.shacl.vocabulary.SH
 import org.topbraid.shacl.vocabulary.TOSH
 import org.apache.jena.vocabulary.RDF
 import org.apache.jena.vocabulary.RDFS
+import org.rogach.scallop._
 
 import com.typesafe.scalalogging.LazyLogging
 import com.github.tototoshi.csv.CSVReader
@@ -82,14 +83,30 @@ object ValidationErrorPrinter {
 }
 
 /**
+ * Command line configuration for Validate.
+ */
+class Conf(arguments: Seq[String]) extends ScallopConf(arguments) {
+  val shapes = trailArg[File](
+    descr = "Shapes file to validate (in Turtle)"
+  )
+  val data = trailArg[File](
+    descr = "Data file to validate (in Turtle)"
+  )
+  verify()
+}
+
+/**
  * Use the given shapes file to validate the given data file.
  * This reads the data file and so can provide better error messages that
  * TopBraid's SHACL engine.
  */
 
 object Validate extends App with LazyLogging {
-  val shapesFile = new File(args(0))
-  val dataFile = new File(args(1))
+  // Parse command line arguments.
+  val conf = new Conf(args)
+
+  val shapesFile = conf.shapes()
+  val dataFile = conf.data()
 
   // Set up the base model.
   val dm = new OntDocumentManager()
