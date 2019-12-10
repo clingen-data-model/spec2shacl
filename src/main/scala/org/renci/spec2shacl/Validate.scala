@@ -56,9 +56,9 @@ object ValidationErrorPrinter {
           println(s"   - In property ${summarizeResource(pathNode)}")
           pathNodeResults.foreach(result => {
             if (result.getValue == null)
-              println(s"     - ${result.getMessage}")
+              println(s"     - ${result.getMessage} [${result.getSourceConstraintComponent}]")
             else
-              println(s"     - (for value ${result.getValue}) ${result.getMessage}")
+              println(s"     - (for value ${result.getValue}) ${result.getMessage} [${result.getSourceConstraintComponent}]")
           })
         })
       })
