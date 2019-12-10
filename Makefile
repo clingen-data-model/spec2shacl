@@ -9,8 +9,11 @@ clean:
 		 examples/examples.ttl
 
 # Test whether all examples validate against the generated SHACL.
-test: examples/examples.ttl shapes/shapes.ttl
-	sbt 'runMain org.topbraid.shacl.tools.Validate -datafile examples/examples.ttl -shapesfile shapes/shapes.ttl'
+test: examples/examples.ttl shapes/shapes.ttl test-only
+
+test-only:
+	sbt 'runMain org.renci.spec2shacl.Validate shapes/shapes.ttl examples/examples.ttl'
+	# sbt 'runMain org.topbraid.shacl.tools.Validate -datafile examples/examples.ttl -shapesfile shapes/shapes.ttl'
 
 # Build the SHACL shapes from the specification downloaded from Google Docs.
 shapes/shapes.ttl: src/main/scala/org/renci/spec2shacl/SpecToSHACL.scala
@@ -35,12 +38,9 @@ examples/graph.jsonld: examples/examples.json examples/context.jsonld
 	jq '[to_entries[].value]' examples/examples.json >> examples/graph.jsonld
 	echo '}' >> examples/graph.jsonld
 
-# Generate the examples in N-quads file from the JSON-LD file.
-examples/examples.nq: examples/graph.jsonld
+# Generate the examples in Turtle from the N-quads file.
+examples/examples.ttl: examples/graph.jsonld
 	# Convert JSON-LD file into n-quads.
 	jsonld normalize -q examples/graph.jsonld > examples/examples.nq
-
-# Generate the examples in Turtle from the N-quads file.
-examples/examples.ttl: examples/examples.nq
 	# Convert n-quads into Turtle.
 	rapper -i nquads -o turtle examples/examples.nq > examples/examples.ttl
