@@ -43,7 +43,7 @@ object ValidationErrorPrinter {
       else statement.getObject
     })
     resultsByClass.toSeq.sortBy(_._2.size).foreach({ case (classNode, classResults) =>
-      println(s"For output results with the class $classNode (${classResults.size} errors)")
+      println(s"For nodes of type $classNode (${classResults.size} errors)")
 
       // 2. Group results by target node.
       val resultsByFocusNode = classResults.groupBy(_.getFocusNode)
