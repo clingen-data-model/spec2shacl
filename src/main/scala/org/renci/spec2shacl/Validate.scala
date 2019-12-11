@@ -4,13 +4,13 @@ import java.io.{File, FileWriter, PrintWriter}
 import java.time.ZonedDateTime
 import java.util.Calendar
 
-import java.io.{File, FileInputStream, IOException, InputStream, ByteArrayOutputStream}
+import java.io.{File, FileInputStream, IOException, InputStream, ByteArrayOutputStream, StringWriter}
 
 import org.topbraid.shacl.validation._
 import org.apache.jena.ontology.OntDocumentManager
 import org.apache.jena.ontology.OntModel
 import org.apache.jena.ontology.OntModelSpec
-import org.apache.jena.rdf.model.{Model, ModelFactory, Resource, RDFNode, RDFList}
+import org.apache.jena.rdf.model.{Model, ModelFactory, Resource, RDFNode, RDFList, SimpleSelector}
 import org.apache.jena.util.FileUtils
 import org.topbraid.jenax.util.JenaUtil
 import org.topbraid.jenax.util.SystemTriples
@@ -104,6 +104,10 @@ class Conf(arguments: Seq[String]) extends ScallopConf(arguments) {
     default = Some(List()),
     descr = "Don't display SourceConstraintComponent ending with these strings"
   )
+  val displayNodes = opt[Boolean](
+    default = Some(false),
+    descr = "Display all failing nodes as Turtle"
+  )
   verify()
 }
 
@@ -174,9 +178,19 @@ object Validate extends App with LazyLogging {
             } ${error.message} [${error.sourceConstraintComponent}]")
           })
         })
-        println()
+        if (conf.displayNodes()) {
+          // Display focusNode as Turtle.
+          val focusNodeModel = focusNode.inModel(dataModel).asResource.listProperties.toModel
+
+          val stringWriter = new StringWriter
+          focusNodeModel.write(stringWriter, "Turtle")
+          println(s"Focus node model: ${stringWriter.toString}")
+        }
       })
     })
+
+    println()
+    println(s"${filteredErrors.length} errors displayed")
 
     val ignoredErrors = errors diff filteredErrors
     if (!ignoredErrors.isEmpty) {
