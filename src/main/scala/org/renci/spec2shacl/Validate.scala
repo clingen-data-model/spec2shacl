@@ -100,7 +100,7 @@ class Conf(arguments: Seq[String]) extends ScallopConf(arguments) {
     default = Some(List()),
     descr = "Only display SourceConstraintComponent ending with these strings"
   )
-  val filter = opt[List[String]](
+  val ignore = opt[List[String]](
     default = Some(List()),
     descr = "Don't display SourceConstraintComponent ending with these strings"
   )
@@ -120,7 +120,7 @@ object Validate extends App with LazyLogging {
   val shapesFile = conf.shapes()
   val dataFile = conf.data()
   val onlyConstraints = conf.only()
-  val filterConstraints = conf.filter()
+  val ignoreConstraints = conf.ignore()
 
   // Set up the base model.
   val dm = new OntDocumentManager()
@@ -153,13 +153,21 @@ object Validate extends App with LazyLogging {
     System.exit(0)
   } else {
     val errors = ValidationErrorGenerator.generate(report, shapesModel, dataModel)
-    errors.groupBy(_.classNode).foreach({ case (classNode, classErrors) =>
+
+    def stringEndsWithOneOf(str: String, oneOf: Seq[String]): Boolean =
+      oneOf.exists(str.endsWith(_))
+
+    val filteredErrors = errors
+      .filter(err => onlyConstraints.isEmpty || stringEndsWithOneOf(err.sourceConstraintComponent.toString, onlyConstraints))
+      .filter(err => ignoreConstraints.isEmpty || !stringEndsWithOneOf(err.sourceConstraintComponent.toString, ignoreConstraints))
+
+    filteredErrors.groupBy(_.classNode).foreach({ case (classNode, classErrors) =>
       // TODO: look up the classNode label
       println(s" - For items with class ${classNode} (${classErrors.length} errors)")
       classErrors.groupBy(_.focusNode).foreach({ case (focusNode, focusErrors) =>
         println(s"   - On node ${focusNode} (${focusErrors.length} errors)")
         focusErrors.groupBy(_.path).foreach({ case (path, pathErrors) =>
-          println(s"     - For path ${path} (${path.length} errors)")
+          println(s"     - For path ${path} (${pathErrors.length} errors)")
           pathErrors.foreach(error => {
             println(s"       - ${
               error.value.map(value => s"(value: $value)").mkString(", ")
@@ -169,6 +177,14 @@ object Validate extends App with LazyLogging {
         println()
       })
     })
+
+    val ignoredErrors = errors diff filteredErrors
+    if (!ignoredErrors.isEmpty) {
+      println(s"${ignoredErrors.length} errors ignored because:")
+      onlyConstraints.foreach(only => println(s" - Only displaying sourceConstraintComponents ending in '$only'"))
+      ignoreConstraints.foreach(ignored => println(s" - Ignoring sourceConstraintComponents ending in '$ignored'"))
+    }
+
     System.exit(1)
   }
 }
