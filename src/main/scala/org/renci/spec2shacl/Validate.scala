@@ -92,6 +92,12 @@ class Conf(arguments: Seq[String]) extends ScallopConf(arguments) {
   val data = trailArg[File](
     descr = "Data file to validate (in Turtle)"
   )
+  val only = opt[List[String]](
+    descr = "Only display SourceConstraintComponent ending with these strings"
+  )
+  val filter = opt[List[String]](
+    descr = "Don't display SourceConstraintComponent ending with these strings"
+  )
   verify()
 }
 
@@ -107,6 +113,8 @@ object Validate extends App with LazyLogging {
 
   val shapesFile = conf.shapes()
   val dataFile = conf.data()
+  val onlyConstraints = conf.only()
+  val filterConstraints = conf.filter()
 
   // Set up the base model.
   val dm = new OntDocumentManager()
