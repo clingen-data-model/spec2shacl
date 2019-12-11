@@ -27,12 +27,21 @@ import com.typesafe.scalalogging.LazyLogging
 import com.github.tototoshi.csv.CSVReader
 import scala.collection.JavaConverters;
 
-/**
+/*
  * Better validation errors for SHACL
  */
 
-object ValidationErrorPrinter {
-  def print(report: ValidationReport, shapesModel: OntModel, dataModel: OntModel): Unit = {
+case class ValidationError(
+  classNode: RDFNode,
+  focusNode: RDFNode,
+  path: String,
+  sourceConstraintComponent: Resource,
+  message: String,
+  value: Option[RDFNode]
+)
+
+object ValidationErrorGenerator {
+  def generate(report: ValidationReport, shapesModel: OntModel, dataModel: OntModel): Seq[ValidationError] = {
     val results = JavaConverters.asScalaBuffer(report.results).toSeq
 
     // 1. Group results by source shape.
@@ -43,29 +52,24 @@ object ValidationErrorPrinter {
       if (statement == null) RDFS.Class
       else statement.getObject
     })
-    resultsByClass.toSeq.sortBy(_._2.size).foreach({ case (classNode, classResults) =>
-      println(s"For nodes of type $classNode (${classResults.size} errors)")
-
-      // 2. Group results by target node.
+    resultsByClass.toSeq.sortBy(_._2.size).flatMap({ case (classNode, classResults) =>
       val resultsByFocusNode = classResults.groupBy(_.getFocusNode)
-      resultsByFocusNode.toSeq.sortBy(_._2.size).foreach({ case (focusNode, focusNodeResults) =>
-        println(s" - In focus node $focusNode (${focusNodeResults.size} errors)")
-
+      resultsByFocusNode.toSeq.sortBy(_._2.size).flatMap({ case (focusNode, focusNodeResults) =>
         val resultsByPath = focusNodeResults.groupBy(_.getPath)
-        resultsByPath.toSeq.sortBy(_._2.size).foreach({ case (pathNode, pathNodeResults) =>
-          println(s"   - In property ${summarizeResource(pathNode)}")
-          pathNodeResults.foreach(result => {
-            if (result.getValue == null)
-              println(s"     - ${result.getMessage} [${result.getSourceConstraintComponent}]")
-            else
-              println(s"     - (for value ${result.getValue}) ${result.getMessage} [${result.getSourceConstraintComponent}]")
+        resultsByPath.toSeq.sortBy(_._2.size).flatMap({ case (pathNode, pathNodeResults) =>
+          pathNodeResults.map(result => {
+            ValidationError(
+              classNode,
+              focusNode,
+              summarizeResource(pathNode),
+              result.getSourceConstraintComponent,
+              result.getMessage,
+              if (result.getValue == null) None else Some(result.getValue)
+            )
           })
         })
       })
-      println()
     })
-
-    println(s"FAIL ${results.size} failures across ${resultsByClass.keys.size} classes.")
   }
 
   def summarizeResource(node: RDFNode): String = {
@@ -93,9 +97,11 @@ class Conf(arguments: Seq[String]) extends ScallopConf(arguments) {
     descr = "Data file to validate (in Turtle)"
   )
   val only = opt[List[String]](
+    default = Some(List()),
     descr = "Only display SourceConstraintComponent ending with these strings"
   )
   val filter = opt[List[String]](
+    default = Some(List()),
     descr = "Don't display SourceConstraintComponent ending with these strings"
   )
   verify()
@@ -146,7 +152,23 @@ object Validate extends App with LazyLogging {
     println("OK")
     System.exit(0)
   } else {
-    ValidationErrorPrinter.print(report, shapesModel, dataModel)
+    val errors = ValidationErrorGenerator.generate(report, shapesModel, dataModel)
+    errors.groupBy(_.classNode).foreach({ case (classNode, classErrors) =>
+      // TODO: look up the classNode label
+      println(s" - For items with class ${classNode} (${classErrors.length} errors)")
+      classErrors.groupBy(_.focusNode).foreach({ case (focusNode, focusErrors) =>
+        println(s"   - On node ${focusNode} (${focusErrors.length} errors)")
+        focusErrors.groupBy(_.path).foreach({ case (path, pathErrors) =>
+          println(s"     - For path ${path} (${path.length} errors)")
+          pathErrors.foreach(error => {
+            println(s"       - ${
+              error.value.map(value => s"(value: $value)").mkString(", ")
+            } ${error.message} [${error.sourceConstraintComponent}]")
+          })
+        })
+        println()
+      })
+    })
     System.exit(1)
   }
 }
