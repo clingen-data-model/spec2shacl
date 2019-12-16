@@ -181,6 +181,9 @@ object Validate extends App with LazyLogging {
         if (conf.displayNodes()) {
           // Display focusNode as Turtle.
           val focusNodeModel = focusNode.inModel(dataModel).asResource.listProperties.toModel
+          focusNodeModel.setNsPrefixes(JavaConverters.mapAsJavaMap(Map(
+            "SEPIO" -> "http://purl.obolibrary.org/obo/SEPIO_"
+          )))
 
           val stringWriter = new StringWriter
           focusNodeModel.write(stringWriter, "Turtle")
