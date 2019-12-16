@@ -32,6 +32,8 @@ import scala.collection.JavaConverters;
  */
 
 case class ValidationError(
+  report: ValidationReport,
+  result: ValidationResult,
   classNode: RDFNode,
   focusNode: RDFNode,
   path: String,
@@ -59,6 +61,8 @@ object ValidationErrorGenerator {
         resultsByPath.toSeq.sortBy(_._2.size).flatMap({ case (pathNode, pathNodeResults) =>
           pathNodeResults.map(result => {
             ValidationError(
+              report,
+              result,
               classNode,
               focusNode,
               summarizeResource(pathNode),
