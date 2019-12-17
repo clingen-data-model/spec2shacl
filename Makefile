@@ -12,7 +12,7 @@ clean:
 test: examples/examples.ttl shapes/shapes.ttl test-only
 
 test-only:
-	sbt 'runMain org.renci.spec2shacl.Validate shapes/shapes.ttl examples/examples.ttl'
+	sbt 'runMain org.renci.spec2shacl.Validate --display-nodes shapes/shapes.ttl examples/examples.ttl'
 	# sbt 'runMain org.topbraid.shacl.tools.Validate -datafile examples/examples.ttl -shapesfile shapes/shapes.ttl'
 
 # Build the SHACL shapes from the specification downloaded from Google Docs.
