@@ -171,17 +171,19 @@ object Validate extends App with LazyLogging {
 
     filteredErrors.groupBy(_.classNode).foreach({ case (classNode, classErrors) =>
       // TODO: look up the classNode label
-      println(s" - For items with class ${classNode} (${classErrors.length} errors)")
+      println(s"CLASS <${classNode}> (${classErrors.length} errors)")
       classErrors.groupBy(_.focusNode).foreach({ case (focusNode, focusErrors) =>
-        println(s"   - On node ${focusNode} (${focusErrors.length} errors)")
+        println(s"Node ${focusNode} (${focusErrors.length} errors)")
         focusErrors.groupBy(_.path).foreach({ case (path, pathErrors) =>
-          println(s"     - For path ${path} (${pathErrors.length} errors)")
+          println(s" - Path <${path}> (${pathErrors.length} errors)")
           pathErrors.foreach(error => {
-            println(s"       - ${
+            println(s"   - [${error.sourceConstraintComponent}] ${error.message} ${
               error.value.map(value => s"(value: $value)").mkString(", ")
-            } ${error.message} [${error.sourceConstraintComponent}]")
+            }")
           })
+          println()
         })
+        println()
         if (conf.displayNodes()) {
           // Display focusNode as Turtle.
           val focusNodeModel = focusNode.inModel(dataModel).asResource.listProperties.toModel
@@ -191,7 +193,7 @@ object Validate extends App with LazyLogging {
 
           val stringWriter = new StringWriter
           focusNodeModel.write(stringWriter, "Turtle")
-          println(s"Focus node model: ${stringWriter.toString}")
+          println(s"Focus node model:\n${stringWriter.toString}")
         }
       })
     })
