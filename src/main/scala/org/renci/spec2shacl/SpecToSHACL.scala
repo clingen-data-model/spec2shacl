@@ -104,7 +104,7 @@ object SpecToSHACL extends App with LazyLogging {
         |    sh:name "${attr("name")} should be in ${attr.getOrElse("_valueSetLabel", valueSet)}" ;
         |    sh:path ( ${attr("iri")} [ sh:inversePath SEPIO-CG:70004 ] ) ;
         |    sh:hasValue $valueSet ;
-        |    sh:minCount 1 ;
+        |    sh:minCount 0 ; # TODO: this doesn't quite express the concept of "all" -- figure out a better fix?
         |    sh:maxCount 1
         |  ] ;
         | """.stripMargin)
