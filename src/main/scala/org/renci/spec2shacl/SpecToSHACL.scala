@@ -30,9 +30,10 @@ object SpecToSHACL extends App with LazyLogging {
   def getAllAttributes(entityId: String): Seq[Map[String, String]] = {
     if (entityId == "") return Seq()
     val attrs: Seq[Map[String, String]] = attributes.filter(attr => attr.contains("entityId") && attr("entityId") == entityId)
-    val parentAttrs: Seq[Map[String, String]] = entitiesById.get(entityId).map(_.flatMap { entity: Map[String, String] =>
-      entity.get("parentType").map(getAllAttributes(_)).getOrElse(Seq())
-    }).getOrElse(Seq())
+    val parentAttrs: Seq[Map[String, String]] = Seq()
+      //entitiesById.get(entityId).map(_.flatMap { entity: Map[String, String] =>
+      //entity.get("parentType").map(getAllAttributes(_)).getOrElse(Seq())
+    //}).getOrElse(Seq())
     parentAttrs ++ attrs
   }
 
@@ -128,7 +129,8 @@ object SpecToSHACL extends App with LazyLogging {
     entitiesById(entityId).flatMap(entity => {
       val entityName = entity("name")
       if (entityName.isEmpty) None
-      else Some(s"""cgshapes:$entityName a sh:NodeShape ;
+      else Some(s"""cgshapes:$entityName
+           |  a sh:NodeShape${if (entity.contains("parentType")) s""", ${entitiesById(entity("parentType")).map(entity => s"""cgshapes:${entity("name")}""").mkString(", ")}""" else ""} ;
            |  ${if (entity.contains("iri") && !entity("iri").isEmpty) s"""sh:targetClass ${entity("iri")} ; # ${entity.getOrElse("iri-label", "unlabelled")}""" else ""}
            |${attributesAsString}
            |.
