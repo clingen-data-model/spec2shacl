@@ -130,7 +130,8 @@ object SpecToSHACL extends App with LazyLogging {
       val entityName = entity("name")
       if (entityName.isEmpty) None
       else Some(s"""cgshapes:$entityName
-           |  a sh:NodeShape${if (entity.contains("parentType")) s""", ${entitiesById(entity("parentType")).map(entity => s"""cgshapes:${entity("name")}""").mkString(", ")}""" else ""} ;
+           |  a sh:NodeShape, rdfs:Class ;
+           |  ${if (entity.contains("parentType")) "rdfs:subClassOf " + entitiesById(entity("parentType")).filter(!_.isEmpty).map(_("name")).filter(!_.isEmpty).map(name => s"""cgshapes:${name}""").mkString(", ") + " ; " else ""}
            |  ${if (entity.contains("iri") && !entity("iri").isEmpty) s"""sh:targetClass ${entity("iri")} ; # ${entity.getOrElse("iri-label", "unlabelled")}""" else ""}
            |${attributesAsString}
            |.
