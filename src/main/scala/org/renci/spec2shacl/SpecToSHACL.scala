@@ -118,7 +118,7 @@ object SpecToSHACL extends App with LazyLogging {
          |    sh:nodeKind $nodeKind ;
          |    ${ dataType.fold("")(dataType => s"xsd:dataType $dataType ;") }
          |    ${ entitiesWithDataType.map(entity => s"sh:class ${entity("iri")} ; # ${entity("name")}").mkString("\n") }
-         |    ${ entitiesWithDataType.map(entity => s"sh:node cgshapes:${entity("name")} ;").mkString("\n") }
+         |    ${ entitiesWithDataType.map(entity => s"sh:node ${entity("iri")} ; # ${entity("name")}").mkString("\n") }
          |    $cardinalityStr
          |  ] ;
          |  $valueSetConstraints
@@ -127,14 +127,17 @@ object SpecToSHACL extends App with LazyLogging {
 
     // Do we even have an entityName?
     entitiesById(entityId).flatMap(entity => {
-      val entityName = entity("name")
-      if (entityName.isEmpty) None
-      else Some(s"""cgshapes:$entityName
+      val parentTypesAsIRIs = if (!entity.contains("parentType")) Seq() else entitiesById(entity("parentType")).filter(!_.isEmpty).map(_("iri")).filter(!_.isEmpty)
+      val propertiesAsString = s"""
+        | ${if (entity.contains("iri") && !entity("iri").isEmpty) s"""sh:targetClass ${entity("iri")} ; # ${entity.getOrElse("iri-label", "unlabelled")}""" else ""}
+        |${attributesAsString}
+        |""".stripMargin
+
+      val iri = entity("iri")
+      if (iri.isEmpty) None
+      else Some(s"""$iri # ${entity("name")}
            |  a sh:NodeShape, rdfs:Class ;
-           |  ${if (entity.contains("parentType")) "rdfs:subClassOf " + entitiesById(entity("parentType")).filter(!_.isEmpty).map(_("name")).filter(!_.isEmpty).map(name => s"""cgshapes:${name}""").mkString(", ") + " ; " else ""}
-           |  ${if (entity.contains("iri") && !entity("iri").isEmpty) s"""sh:targetClass ${entity("iri")} ; # ${entity.getOrElse("iri-label", "unlabelled")}""" else ""}
-           |${attributesAsString}
-           |.
+           |  ${ if (!parentTypesAsIRIs.isEmpty) "sh:and (" + parentTypesAsIRIs.mkString(" ") + " [ " + propertiesAsString + " ] ) . " else propertiesAsString + " . " }
            |""".stripMargin)
     }).foreach({ str =>
       // Remove all empty lines before printing it out.
