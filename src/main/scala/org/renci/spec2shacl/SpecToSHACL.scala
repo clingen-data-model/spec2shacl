@@ -30,10 +30,11 @@ object SpecToSHACL extends App with LazyLogging {
   def getAllAttributes(entityId: String): Seq[Map[String, String]] = {
     if (entityId == "") return Seq()
     val attrs: Seq[Map[String, String]] = attributes.filter(attr => attr.contains("entityId") && attr("entityId") == entityId)
-    val parentAttrs: Seq[Map[String, String]] = entitiesById.get(entityId).map(_.flatMap { entity: Map[String, String] =>
-      entity.get("parentType").map(getAllAttributes(_)).getOrElse(Seq())
-    }).getOrElse(Seq())
-    parentAttrs ++ attrs
+    attrs
+    // val parentAttrs: Seq[Map[String, String]] = entitiesById.get(entityId).map(_.flatMap { entity: Map[String, String] =>
+      // entity.get("parentType").map(getAllAttributes(_)).getOrElse(Seq())
+    // }).getOrElse(Seq())
+    // parentAttrs ++ attrs
   }
 
   val output = new PrintWriter(new FileWriter(outputFile))
@@ -117,7 +118,6 @@ object SpecToSHACL extends App with LazyLogging {
          |    sh:nodeKind $nodeKind ;
          |    ${ dataType.fold("")(dataType => s"xsd:dataType $dataType ;") }
          |    ${ entitiesWithDataType.map(entity => s"sh:class ${entity("iri")} ; # ${entity("name")}").mkString("\n") }
-         |    ${ entitiesWithDataType.map(entity => s"sh:node cgshapes:${entity("name")} ;").mkString("\n") }
          |    $cardinalityStr
          |  ] ;
          |  $valueSetConstraints
@@ -126,11 +126,14 @@ object SpecToSHACL extends App with LazyLogging {
 
     // Do we even have an entityName?
     entitiesById(entityId).flatMap(entity => {
+      // What are the parent types of this entity?
+      val parentShapes = if (!entity.contains("parentType")) Seq() else entitiesById(entity("parentType")).filter(!_.isEmpty).map(_("name")).filter(!_.isEmpty).map("cgshapes:" + _)
+
       val entityName = entity("name")
       if (entityName.isEmpty) None
       else Some(s"""cgshapes:$entityName a sh:NodeShape ;
            |  ${if (entity.contains("iri") && !entity("iri").isEmpty) s"""sh:targetClass ${entity("iri")} ; # ${entity.getOrElse("iri-label", "unlabelled")}""" else ""}
-           |${attributesAsString}
+           |  ${if (parentShapes.isEmpty) attributesAsString else s"sh:and ( ${parentShapes.mkString(" ")} [ $attributesAsString ])"}
            |.
            |""".stripMargin)
     }).foreach({ str =>
