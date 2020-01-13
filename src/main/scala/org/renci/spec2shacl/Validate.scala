@@ -141,6 +141,13 @@ object Validate extends App with LazyLogging {
   shacl.add(SystemTriples.getVocabularyModel())
   dm.addModel(SH.BASE_URI, shacl)
 
+  // Load dash.ttl.
+  val dashTTL = classOf[SHACLSystemModel].getResourceAsStream("/rdf/dash.ttl")
+  val dash = JenaUtil.createMemoryModel()
+  dash.read(dashTTL, SH.BASE_URI, FileUtils.langTurtle)
+  dash.add(SystemTriples.getVocabularyModel())
+  dm.addModel(SH.BASE_URI, dash)
+
   spec.setDocumentManager(dm);
 
   // Load the shapes.
