@@ -13,13 +13,13 @@ test: examples/examples.ttl shapes/shapes.shex test-only
 	# examples/examples.ttl shapes/shapes.ttl test-only
 
 test-only:
-	sbt "runMain es.weso.shaclex.Main -s shapes/shapes.shex --schemaFormat shexc  -d examples/examples.ttl"
+	sbt "runMain es.weso.shaclex.Main -s shapes/shapes.shex --schemaFormat shexc  -d examples/examples.ttl --shapeMap shapes/shapes-shex.map"
 	# sbt 'runMain org.renci.spec2shacl.Validate --display-nodes shapes/shapes.shex examples/examples.ttl'
 	# sbt 'runMain org.topbraid.shacl.tools.Validate -datafile examples/examples.ttl -shapesfile shapes/shapes.ttl'
 
 # Build the SHACL shapes from the specification downloaded from Google Docs.
 shapes/shapes.shex: src/main/scala/org/renci/spec2shacl/SpecToShEx.scala
-		sbt -warn 'runMain org.renci.spec2shacl.SpecToShEx "data/DMWG - Interpretation Model" shapes/shapes.shex'
+		sbt -warn 'runMain org.renci.spec2shacl.SpecToShEx "data/DMWG - Interpretation Model" shapes/shapes.shex shapes/shapes-shex.map'
 
 # Build the SHACL shapes from the specification downloaded from Google Docs.
 shapes/shapes.ttl: src/main/scala/org/renci/spec2shacl/SpecToSHACL.scala
