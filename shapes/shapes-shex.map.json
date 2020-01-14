@@ -1,0 +1,6 @@
+[
+  {
+    "nodeSelector": "http://dataexchange.clinicalgenome.org/CGEX_CondPrev159",
+    "shapeLabel": "http://dataexchange.clinicalgenome.org/interpretation/shacl/shapes/ConditionPrevelanceStatement"
+  }
+]
