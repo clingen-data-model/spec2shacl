@@ -1,3 +1,7 @@
+# Configuration.
+MEMORY=16G
+
+# Phone targets.
 .PHONY: all clean test
 all: test
 
@@ -10,7 +14,7 @@ clean:
 
 # Test whether all examples validate against the generated SHACL.
 test: examples/examples.ttl shapes/shapes.ttl
-	sbt 'runMain org.topbraid.shacl.tools.Validate -datafile examples/examples.ttl -shapesfile shapes/shapes.ttl'
+	JAVA_OPTS="-Xmx$(MEMORY)" coursier launch com.ggvaidya:shacli_2.12:0.1-SNAPSHOT -- validate --display-nodes shapes/shapes.ttl examples/examples.ttl
 
 # Build the SHACL shapes from the specification downloaded from Google Docs.
 shapes/shapes.ttl: src/main/scala/org/renci/spec2shacl/SpecToSHACL.scala
@@ -44,3 +48,4 @@ examples/examples.nq: examples/graph.jsonld
 examples/examples.ttl: examples/examples.nq
 	# Convert n-quads into Turtle.
 	rapper -i nquads -o turtle examples/examples.nq > examples/examples.ttl
+
