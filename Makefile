@@ -14,7 +14,7 @@ clean:
 
 # Test whether all examples validate against the generated SHACL.
 test: examples/examples.ttl shapes/shapes.ttl
-	JAVA_OPTS="-Xmx$(MEMORY)" coursier launch com.ggvaidya:shacli_2.12:0.1-SNAPSHOT -- validate --reasoning rdfs --display-nodes shapes/shapes.ttl examples/examples.ttl
+	JAVA_OPTS="-Xmx$(MEMORY)" coursier launch com.ggvaidya:shacli_2.12:0.1-SNAPSHOT -- validate --import ontologies/sepio-clingen-acmg.owl --reasoning owl --display-nodes shapes/shapes.ttl examples/examples.ttl
 
 # Build the SHACL shapes from the specification downloaded from Google Docs.
 shapes/shapes.ttl: src/main/scala/org/renci/spec2shacl/SpecToSHACL.scala
