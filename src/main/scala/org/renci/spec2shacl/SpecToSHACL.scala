@@ -127,7 +127,7 @@ object SpecToSHACL extends App with LazyLogging {
       //  - whether sh:class should be set.
       //  - whether values for this property should be from a particular value set.
       val nodeKind = attr("dataType") match {
-        case "string" | "integer" | "number" | "Datetime" => "sh:Literal"
+        case "string" | "integer" | "number" | "boolean" | "Datetime" => "sh:Literal"
         case "@id" => "sh:BlankNodeOrIRI"
         case _ => "sh:BlankNodeOrIRI"
       }
@@ -136,6 +136,7 @@ object SpecToSHACL extends App with LazyLogging {
         case "string" => Some("rdf:string")
         case "integer" => Some("xsd:integer")
         case "number" => Some("xsd:decimal")
+        case "boolean" => Some("xsd:boolean")
         case "Datetime" => Some("xsd:dateTime")
         case _ => None
       }
