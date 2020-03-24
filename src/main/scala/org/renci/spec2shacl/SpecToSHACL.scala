@@ -96,11 +96,11 @@ object SpecToSHACL extends App with LazyLogging {
     val patterns = valueSetAttrs.getOrElse(vsId, Map.empty).getOrElse("A145", Map.empty)
     val values = valueSetAttrs.getOrElse(vsId, Map.empty).getOrElse("A121", Map.empty)
 
-    val valueStr = s"sh:in ( ${values.keySet.mkString(" ")} )"
+    val valueStr =  s"sh:in ( ${values.keySet.mkString(" ")} )"
     val patternsStr = patterns.keySet.map(pattern => s"""[ sh:pattern "^${ pattern.replace("\\", "\\\\") }" ]""")
     val definition = if (flagExtensible) valueStr else s"""
       |  sh:or (
-      |    [ $valueStr ]
+      |    ${ if(values.keySet.nonEmpty) s"[ $valueStr ]" else "" }
       |    ${patternsStr.mkString("\n    ")}
       |  )
       |""".stripMargin
@@ -146,15 +146,9 @@ object SpecToSHACL extends App with LazyLogging {
       // Is this property part of a ValueSet? If so, add constraints to ensure that
       // the value set has the right skos:inScheme. Note that this must be present,
       // whether or not the property itself is present.
-      val valueSetConstraints = attr.get("@valueSetId").filter(!_.isEmpty).fold("")(valueSet => s"""
-        |  sh:property [
-        |    sh:name "${attr("name")} should be in ${attr.getOrElse("_valueSetLabel", valueSet)}" ;
-        |    sh:path ( ${attr("iri")} [ sh:inversePath SEPIO-CG:70004 ] ) ;
-        |    sh:hasValue $valueSet ;
-        |    sh:minCount 1 ;
-        |    sh:maxCount 1
-        |  ] ;
-        | """.stripMargin)
+      val valueSetNodeLabels: Seq[String] = attr.get("@valueSetId").toSeq.flatMap(id => {
+        valueSetsById.get(id).toSeq.flatMap(_.map(_.getOrElse("_valueset.label", "(none)")))
+      })
 
       // TODO: should we choose to close this definition using sh:closed?
       s"""  sh:property [
@@ -162,12 +156,12 @@ object SpecToSHACL extends App with LazyLogging {
          |    sh:description "${attr("description")}" ;
          |    sh:path ${attr("iri")} ; # ${attr("iri-label")}
          |    sh:nodeKind $nodeKind ;
+         |    ${ valueSetNodeLabels.map(vsnl => s"sh:node cgshapes:${vsnl.replaceAll("\\s", "")}Shape ;").mkString("\n    ") }
          |    ${ dataType.fold("")(dataType => s"xsd:dataType $dataType ;") }
-         |    ${ entitiesWithDataType.map(entity => s"sh:class ${entity("iri")} ; # ${entity("name")}").mkString("\n") }
-         |    ${ entitiesWithDataType.map(entity => s"sh:node cgshapes:${entity("name")} ;").mkString("\n") }
+         |    ${ entitiesWithDataType.map(entity => s"sh:class ${entity("iri")} ; # ${entity("name")}").mkString("\n    ") }
+         |    ${ entitiesWithDataType.map(entity => s"sh:node cgshapes:${entity("name")} ;").mkString("\n    ") }
          |    $cardinalityStr
          |  ] ;
-         |  $valueSetConstraints
          | """.stripMargin
     }).mkString("\n")
 
