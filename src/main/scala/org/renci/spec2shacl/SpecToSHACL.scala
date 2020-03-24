@@ -74,8 +74,8 @@ object SpecToSHACL extends App with LazyLogging {
        |@prefix PROV: <http://www.w3.org/ns/prov#> .
        |@prefix RDFS: <http://www.w3.org/2000/01/rdf-schema#> .
        |@prefix RO: <http://purl.obolibrary.org/obo/RO_> .
-       |@prefix SO: <http://purl.obolibrary.org/obo/so#> .
-       |@prefix HP: <http://purl.obolibrary.org/obo/hp#> .
+       |@prefix SO: <http://purl.obolibrary.org/obo/SO_> .
+       |@prefix HP: <http://purl.obolibrary.org/obo/HP_> .
        |@prefix IGSR: <http://www.internationalgenome.org/> .
        |@prefix GNOMAD: <http://gnomad.broadinstitute.org/> .
        |@prefix EVS: <http://evs.gs.washington.edu/EVS/> .
