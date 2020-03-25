@@ -16,6 +16,7 @@ install:
   - cd shacli
   - sbt publishLocal
   - cd -
+  - curl -Lo cs https://git.io/coursier-cli-linux && chmod +x cs && ./cs --help
 
 # We need to run `make test-only` to test this.
 script: make test-only

@@ -18,7 +18,7 @@ test: test-only examples/examples.ttl shapes/shapes.ttl
 
 # Test without regenerating examples.
 test-only: 
-	JAVA_OPTS="-Xmx$(MEMORY)" coursier launch com.ggvaidya:shacli_2.12:0.1-SNAPSHOT -- validate --import ontologies/sepio-clingen-acmg.owl --reasoning owl --display-nodes shapes/shapes.ttl examples/examples.ttl
+	JAVA_OPTS="-Xmx$(MEMORY)" ./cs launch com.ggvaidya:shacli_2.12:0.1-SNAPSHOT -- validate --import ontologies/sepio-clingen-acmg.owl --reasoning owl --display-nodes shapes/shapes.ttl examples/examples.ttl
 
 # Build the SHACL shapes from the specification downloaded from Google Docs.
 shapes/shapes.ttl: src/main/scala/org/renci/spec2shacl/SpecToSHACL.scala
