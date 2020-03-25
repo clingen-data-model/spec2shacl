@@ -13,7 +13,11 @@ clean:
 		 examples/examples.ttl
 
 # Test whether all examples validate against the generated SHACL.
-test: examples/examples.ttl shapes/shapes.ttl
+test: test-only examples/examples.ttl shapes/shapes.ttl
+	echo Testing done.
+
+# Test without regenerating examples.
+test-only: shapes/shapes.ttl
 	JAVA_OPTS="-Xmx$(MEMORY)" coursier launch com.ggvaidya:shacli_2.12:0.1-SNAPSHOT -- validate --import ontologies/sepio-clingen-acmg.owl --reasoning owl --display-nodes shapes/shapes.ttl examples/examples.ttl
 
 # Build the SHACL shapes from the specification downloaded from Google Docs.

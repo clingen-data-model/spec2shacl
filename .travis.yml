@@ -17,5 +17,5 @@ install:
   - sbt publishLocal
   - cd -
 
-# We need to run `make test` to test this.
-script: make test
+# We need to run `make test-only` to test this.
+script: make test-only
