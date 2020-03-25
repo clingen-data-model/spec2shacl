@@ -17,7 +17,7 @@ test: test-only examples/examples.ttl shapes/shapes.ttl
 	echo Testing done.
 
 # Test without regenerating examples.
-test-only: shapes/shapes.ttl
+test-only: 
 	JAVA_OPTS="-Xmx$(MEMORY)" coursier launch com.ggvaidya:shacli_2.12:0.1-SNAPSHOT -- validate --import ontologies/sepio-clingen-acmg.owl --reasoning owl --display-nodes shapes/shapes.ttl examples/examples.ttl
 
 # Build the SHACL shapes from the specification downloaded from Google Docs.
