@@ -1,0 +1,20 @@
+# Scala setup.
+language: scala
+scala:
+  - "2.12.10"
+
+# Cache Maven and SBT packages so we don't need to keep downloading them.
+cache:
+  directories:
+    - $HOME/.m2
+    - $HOME/.sbt
+
+# While SHACLI isn't published yet, we need to clone and install it locally.
+install:
+  - git clone https://github.com/gaurav/shacli.git -b general-improvements
+  - cd shacli
+  - sbt publishLocal
+  - cd -
+
+# We need to run `make test` to test this.
+script: make test
