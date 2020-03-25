@@ -8,6 +8,7 @@ cache:
   directories:
     - $HOME/.m2
     - $HOME/.sbt
+    - $HOME/.ivy2
 
 # While SHACLI isn't published yet, we need to clone and install it locally.
 install:
